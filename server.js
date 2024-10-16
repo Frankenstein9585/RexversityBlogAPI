@@ -6,6 +6,10 @@ const PORT = process.env.PORT || 3000;
 
 server.use(express.json());
 
+const connectDB = require('./helpers/db');
+
+connectDB();
+
 server.use('/posts', require('./routes/posts'));
 server.use('/users', require('./routes/users'));
 
