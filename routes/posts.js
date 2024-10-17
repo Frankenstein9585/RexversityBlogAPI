@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
+const User = require('../models/User');
 
 
 const getPost = async (req, res, next) => {
@@ -27,6 +28,21 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Get all Posts from a particular user
+router.get('/user/:userId', async (req, res) => {
+    const userId = req.params.userId;
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({message: 'User not found'});
+        }
+        const posts = await Post.find({ author: userId });
+        res.json(posts);
+    } catch (error) {
+        res.status(500).json({error: error.message});
+    }
+});
+
 // Get one post
 router.get('/:id', getPost, (req, res) => {
    res.json(res.post);
@@ -34,10 +50,15 @@ router.get('/:id', getPost, (req, res) => {
 
 // Creating a post
 router.post('/', async (req, res) => {
-   const { title, content } = req.body;
+   const { title, content, author } = req.body;
+   const user = await User.findById(author);
+   if (!user) {
+       return res.status(404).json({message: 'User not found'});
+   }
    const post = new Post({
        title,
-       content
+       content,
+       author
    });
 
    try {
